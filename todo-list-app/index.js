@@ -1,5 +1,6 @@
 const parent = document.querySelector("ul");
 const input = document.querySelector("input");
+const code = document.querySelector("pre");
 
 let todoListState = "";
 let todoListItems = [
@@ -24,6 +25,8 @@ const _reRenderItems = () => {
   // remove
   parent.innerHTML = "";
 
+  code.innerText = JSON.stringify(todoListItems, null, 4);
+
   // add items
   todoListItems.forEach((item) => {
     _addNewTodoItem(item.title, item.isChecked, item.id);
@@ -35,7 +38,7 @@ const _addNewTodoItem = (title, isChecked, id) => {
 
   li.innerHTML = `
 <li
-    onclick="_toggleListItem('${id}')"
+
             class="group cursor-pointer bg-gray-100 hover:bg-gray-200 p-2 rounded-lg duration-100 ease-in flex items-center gap-2"
           >
             <div
@@ -62,11 +65,11 @@ const _addNewTodoItem = (title, isChecked, id) => {
               </svg>
             </div>
 
-            <span class="flex-1 ${
-              isChecked ? "line-through text-gray-400" : ""
-            }">${title}</span>
+            <input id="edit-btn" value="${title}" oninput="_editInput(event,${id})"  />          
 
-            <div class="${
+            <div 
+                onclick="_toggleListItem('${id}')"
+            class="${
               isChecked ? "bg-green-400" : "bg-gray-200"
             } p-1  rounded-full">
                 <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" class="${
@@ -80,11 +83,31 @@ const _addNewTodoItem = (title, isChecked, id) => {
   parent.appendChild(li);
 };
 
+let timeOut;
+const _editInput = (event, id) => {
+  const value = event.target.value;
+
+  // Clear Timeout
+  clearTimeout(timeOut);
+
+  const newTodoListItems = todoListItems.map((item) => {
+    if (item.id != id) {
+      return item;
+    }
+
+    return { ...item, title: value };
+  });
+  todoListItems = newTodoListItems;
+
+  // Start Timeout
+  timeOut = setTimeout(() => _reRenderItems(), 500);
+};
+
 function _removeListItemById(id) {
   const newItems = todoListItems.filter((item) => {
     return item.id != id;
   });
-  todoListItems = newItems;g
+  todoListItems = newItems;
 
   _reRenderItems();
 }
@@ -105,7 +128,6 @@ function _toggleListItem(id) {
 const _resetInputValue = () => {
   // Reset the state
   todoListState = "";
-
   input.value = "";
 };
 
